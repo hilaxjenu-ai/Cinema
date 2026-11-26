@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Hilax Cinema</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0b0b0c;
+      color: #ffffff;
+      font-family: "Netflix Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      padding: 12px;
+      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      line-height: 1.45;
+    }
+    .wrap { max-width: 1280px; margin: 0 auto; }
+
+    /* Topbar */
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      padding: 4px 2px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 20px;
+      font-weight: 900;
+      color: #e50914;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+    .brand-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 22px;
+      border-radius: 4px;
+      background: #e50914;
+      color: #fff;
+      font-size: 11px;
+    }
+    .site-switch {
+      display: flex;
+      gap: 8px;
+      flex: 1;
+      max-width: 740px;
+      justify-content: flex-end;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .admin-site-box {
+      display: none;
+      gap: 8px;
+      align-items: center;
+      flex: 1 1 100%;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .site-input {
+      flex: 1;
+      min-width: 150px;
+      background: #161618;
+      border: 1px solid #303036;
+      color: #fff;
+      padding: 8px 11px;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+    .site-input:focus { outline: none; border-color: #e50914; }
+
+    /* Main Grid: Desktop Sidebar + Mobile Horizontal Pills */
+    .grid {
+      display: grid;
+      grid-template-columns: 235px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      .grid { grid-template-columns: 1fr; gap: 12px; }
+    }
+    .panel {
+      background: #141416;
+      border: 1px solid #26262b;
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .panel h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #a3a3ad;
+    }
+    .cat-back-btn {
+      background: #2a1416;
+      border: 1px solid #e50914;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .cat-back-btn:hover { background: #e50914; }
+
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .cat-btn {
+      width: 100%;
+      text-align: left;
+      background: #1d1d22;
+      border: 1px solid #2c2c34;
+      color: #f5f5f7;
+      padding: 9px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.14s ease, border-color 0.14s ease;
+    }
+    .cat-btn:hover { border-color: #e50914; background: #26262e; }
+    .cat-btn.active { background: #e50914; border-color: #e50914; color: #fff; }
+
+    @media (max-width: 820px) {
+      .list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+      .list::-webkit-scrollbar { display: none; }
+      .cat-btn {
+        width: auto;
+        flex: 0 0 auto;
+        border-radius: 999px;
+        padding: 7px 13px;
+        font-size: 12.5px;
+      }
+      .cat-btn .cat-arrow { display: none; }
+    }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 10px;
+      font-size: 12.5px;
+      align-items: center;
+    }
+    .crumb {
+      background: #222227;
+      border: 1px solid #34343c;
+      color: #e5e5ea;
+      padding: 5px 10px;
+      border-radius: 999px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .crumb:hover { border-color: #e50914; color: #fff; }
+    .crumb-back {
+      background: #2a1416;
+      border: 1px solid #e50914;
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Search Row */
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input {
+      flex: 1 1 180px;
+      min-width: 0;
+      background: #0e0e10;
+      border: 1px solid #303036;
+      color: #fff;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .search-input:focus { outline: none; border-color: #e50914; }
+    .scope-select {
+      background: #18181c;
+      border: 1px solid #303036;
+      color: #fff;
+      padding: 9px 10px;
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Poster Grid: 2-Column Mobile, Auto-Fill Desktop */
+    .poster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) {
+      .poster-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+    }
+    .poster-card {
+      background: #101012;
+      border: 1px solid #242429;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .poster-card:hover {
+      transform: translateY(-2px);
+      border-color: #e50914;
+    }
+    .poster-img-wrap {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      background: #09090b;
+      overflow: hidden;
+    }
+    .poster-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .poster-title {
+      padding: 8px 9px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #f3f3f6;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .meta { font-size: 12px; color: #a3a3ad; }
+    .btn {
+      background: #e50914;
+      color: #fff;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .btn:hover { background: #f6121d; }
+    .btn-dark { background: #222228; border: 1px solid #383842; }
+    .btn-dark:hover { background: #2f2f38; }
+
+    /* Netflix Cinema Player */
+    .nf-player-wrap {
+      margin-top: 18px;
+      background: #000000;
+      border: 1px solid #26262c;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85);
+    }
+    .nf-stage {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 210px;
+      background: #000000;
+      overflow: hidden;
+      user-select: none;
+    }
+    .nf-stage video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      display: block;
+    }
+    .nf-top-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px 12px;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.88), transparent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      z-index: 4;
+      transition: opacity 0.25s ease;
+    }
+    .nf-top-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+    .nf-poster-mini {
+      width: 28px;
+      height: 42px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      flex-shrink: 0;
+    }
+    .nf-title-group { min-width: 0; }
+    .nf-movie-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nf-sub-status {
+      font-size: 11px;
+      color: #d4d4d8;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nf-top-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .nf-pill {
+      background: rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 999px;
+    }
+    .nf-center-play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.68);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      color: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3;
+      transition: transform 0.15s ease, background 0.15s ease, opacity 0.25s ease;
+    }
+    .nf-center-play:hover {
+      transform: translate(-50%, -50%) scale(1.06);
+      background: rgba(229, 9, 20, 0.92);
+    }
+    .nf-center-play.hidden { opacity: 0; pointer-events: none; }
+
+    .nf-bottom-bar {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      padding: 20px 10px 10px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.94), rgba(0, 0, 0, 0.6) 65%, transparent);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 4;
+      transition: opacity 0.25s ease;
+    }
+    .nf-stage.controls-hidden .nf-top-bar,
+    .nf-stage.controls-hidden .nf-bottom-bar,
+    .nf-stage.controls-hidden .nf-center-play {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .nf-scrubber-box {
+      position: relative;
+      width: 100%;
+      height: 16px;
+      display: flex;
+      align-items: center;
+    }
+    .nf-track-bg {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 4px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .nf-buffer-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: rgba(255, 255, 255, 0.52);
+    }
+    .nf-played-fill {
+      position: relative;
+      height: 100%;
+      width: 0%;
+      background: #e50914;
+    }
+    .nf-seek-input {
+      position: relative;
+      width: 100%;
+      opacity: 0;
+      cursor: pointer;
+      height: 16px;
+      z-index: 2;
+    }
+
+    .nf-controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .nf-left, .nf-right {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+    .nf-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid transparent;
+      color: #fff;
+      border-radius: 6px;
+      padding: 5px 7px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .nf-btn:hover { background: rgba(255, 255, 255, 0.16); }
+    .nf-btn.active { background: #e50914; color: #fff; }
+    .nf-time {
+      font-size: 11px;
+      color: #e4e4e7;
+      font-variant-numeric: tabular-nums;
+      margin-left: 2px;
+    }
+    .nf-vol {
+      width: 56px;
+      accent-color: #e50914;
+      cursor: pointer;
+    }
+    @media (max-width: 600px) {
+      .nf-vol { display: none; }
+      .nf-pill { display: none; }
+    }
+    .nf-select {
+      background: rgba(20, 20, 24, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .status { font-size: 12.5px; color: #b3b3bd; word-break: break-word; }
+    .error { color: #ff4d4f; }
+    .pager { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand" onclick="returnToMainLibrary()">
+        <span class="brand-icon">&#9658;</span>
+        <span>HILAX CINEMA</span>
+      </div>
+      <div class="site-switch">
+        <button id="adminToggleBtn" class="btn btn-dark" onclick="toggleAdminAccess()">Admin</button>
+        <div id="adminSiteBox" class="admin-site-box">
+          <input
+            id="primarySiteInput"
+            class="site-input"
+            type="text"
+            placeholder="Admin: Primary Source URL"
+            onkeydown="if(event.key==='Enter') applyCustomSites();"
+          />
+          <input
+            id="dubbedSiteInput"
+            class="site-input"
+            type="text"
+            placeholder="Admin: Dubbed Source URL"
+            onkeydown="if(event.key==='Enter') applyCustomSites();"
+          />
+          <button class="btn" onclick="applyCustomSites()">Save Sources</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Categories</h2>
+          <button id="catBackBtn" class="cat-back-btn" style="display:none;" onclick="returnToMainLibrary()">← Back</button>
+        </div>
+        <div id="categories" class="list"><div class="status">Loading categories...</div></div>
+      </div>
+
+      <div class="panel">
+        <h2>Browse &amp; Watch</h2>
+        <div id="breadcrumb" class="breadcrumb"></div>
+
+        <div class="search-row">
+          <input
+            id="searchInput"
+            class="search-input"
+            type="text"
+            placeholder="Search movies..."
+            onkeydown="if(event.key==='Enter') runSearch();"
+          />
+          <select id="searchScope" class="scope-select">
+            <option value="all" selected>All Movies</option>
+            <option value="category">Current Category</option>
+          </select>
+          <button class="btn" onclick="runSearch()">Search</button>
+        </div>
+        <div id="searchMeta" class="status" style="margin-bottom:6px;"></div>
+        <div id="searchResults" class="poster-grid" style="margin-bottom:12px;"></div>
+
+        <div id="entries" class="poster-grid"></div>
+        <div id="pager" class="pager"></div>
+
+        <div class="nf-player-wrap">
+          <div id="nfStage" class="nf-stage" onmousemove="wakeControls()" ontouchstart="wakeControls()">
+            <video id="videoPlayer" preload="auto" playsinline onclick="togglePlay()"></video>
+
+            <div class="nf-top-bar">
+              <div class="nf-top-left">
+                <img id="shotImg" class="nf-poster-mini" alt="Poster" style="display:none;" />
+                <div class="nf-title-group">
+                  <div id="nowPlayingTitle" class="nf-movie-title">Select a movie to play</div>
+                  <div id="resolveStatus" class="nf-sub-status">Hilax Cinema player ready</div>
+                </div>
+              </div>
+              <div class="nf-top-right">
+                <span id="bufferBadge" class="nf-pill">Buffer 0%</span>
+                <div id="actionLinks" style="display:flex; gap:6px;"></div>
+              </div>
+            </div>
+
+            <button id="centerPlayBtn" class="nf-center-play" onclick="togglePlay()" title="Play">&#9658;</button>
+
+            <div class="nf-bottom-bar">
+              <div class="nf-scrubber-box">
+                <div class="nf-track-bg">
+                  <div id="bufferFill" class="nf-buffer-fill"></div>
+                  <div id="playedFill" class="nf-played-fill"></div>
+                </div>
+                <input id="seekBar" class="nf-seek-input" type="range" min="0" max="100" step="0.1" value="0" oninput="onSeek(this.value)" />
+              </div>
+
+              <div class="nf-controls-row">
+                <div class="nf-left">
+                  <button id="playPauseBtn" class="nf-btn" onclick="togglePlay()">Play</button>
+                  <button class="nf-btn" onclick="skipBy(-10)">-10s</button>
+                  <button class="nf-btn" onclick="skipBy(10)">+10s</button>
+                  <button id="muteBtn" class="nf-btn" onclick="toggleMute()">Mute</button>
+                  <input id="volSlider" class="nf-vol" type="range" min="0" max="1" step="0.02" value="1" oninput="onVolume(this.value)" />
+                  <span id="timeReadout" class="nf-time">00:00 / 00:00</span>
+                </div>
+
+                <div class="nf-right">
+                  <select id="qualitySelect" class="nf-select" onchange="onQualityChange(this.value)" title="Select video quality">
+                    <option value="">360p / 720p / 1080p</option>
+                  </select>
+                  <button id="lowNetBtn" class="nf-btn active" onclick="toggleLowNet()" title="Low internet buffer helper">Low Net</button>
+                  <select id="speedSelect" class="nf-select" onchange="onSpeed(this.value)" title="Playback speed">
+                    <option value="0.75">0.75x</option>
+                    <option value="1" selected>1x</option>
+                    <option value="1.25">1.25x</option>
+                    <option value="1.5">1.5x</option>
+                    <option value="2">2x</option>
+                  </select>
+                  <button class="nf-btn" onclick="togglePiP()">PiP</button>
+                  <button class="nf-btn" onclick="toggleFullscreen()">Full</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      seedUrl: "",
+      dubbedUrl: "",
+      adminKey: "",
+      canGoBack: false,
+      activeCatUrl: null,
+      history: [],
+      currentUrl: null,
+      currentReferer: null,
+      currentTitle: "",
+      lowNetMode: true,
+      pausedForBuffer: false,
+      activeMovieTitle: "",
+      activeReferer: null,
+      pendingSeekTime: null,
+      browseReqId: 0,
+      resolveReqId: 0,
+      hideTimer: null,
+    };
+
+    const nfStage = document.getElementById("nfStage");
+    const video = document.getElementById("videoPlayer");
+    const playPauseBtn = document.getElementById("playPauseBtn");
+    const centerPlayBtn = document.getElementById("centerPlayBtn");
+    const seekBar = document.getElementById("seekBar");
+    const playedFill = document.getElementById("playedFill");
+    const bufferFill = document.getElementById("bufferFill");
+    const bufferBadge = document.getElementById("bufferBadge");
+    const lowNetBtn = document.getElementById("lowNetBtn");
+    const qualitySelect = document.getElementById("qualitySelect");
+    const timeReadout = document.getElementById("timeReadout");
+    const muteBtn = document.getElementById("muteBtn");
+    const speedSelect = document.getElementById("speedSelect");
+    const catBackBtn = document.getElementById("catBackBtn");
+
+    function syncBackButtons() {
+      catBackBtn.style.display = state.canGoBack ? "inline-block" : "none";
+    }
+
+    function toggleAdminAccess() {
+      const box = document.getElementById("adminSiteBox");
+      const btn = document.getElementById("adminToggleBtn");
+      if (state.adminKey) {
+        state.adminKey = "";
+        box.style.display = "none";
+        btn.textContent = "Admin";
+        return;
+      }
+      const entered = window.prompt("Enter Admin Key:");
+      if (!entered) return;
+      state.adminKey = entered.trim();
+      box.style.display = "flex";
+      btn.textContent = "Lock Admin";
+    }
+
+    function adminHeaders() {
+      return state.adminKey ? { "X-Admin-Key": state.adminKey } : {};
+    }
+
+    function wakeControls() {
+      nfStage.classList.remove("controls-hidden");
+      clearTimeout(state.hideTimer);
+      if (!video.paused && !video.ended) {
+        state.hideTimer = setTimeout(() => {
+          nfStage.classList.add("controls-hidden");
+        }, 3000);
+      }
+    }
+
+    function cleanDisplayLabel(raw) {
+      return (raw || "Movie")
+        .replace(/\b(moviesda(?:\.(?:mobi|com|net|org|in|cv|one|live|pro))?|isaidub(?:\.(?:green|com|net|one))?|tamilrockers|tamilyogi|kuttymovies)\b\s*[-:|/]*\s*/gi, "")
+        .replace(/\s*[-:|/]+\s*$/, "")
+        .replace(/\s+/g, " ")
+        .trim() || "Movie";
+    }
+
+    function formatTime(sec) {
+      if (!Number.isFinite(sec) || sec < 0) return "00:00";
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function getBufferedAhead() {
+      if (!video.buffered || video.buffered.length === 0) return 0;
+      const now = video.currentTime || 0;
+      for (let i = 0; i < video.buffered.length; i++) {
+        const start = video.buffered.start(i);
+        const end = video.buffered.end(i);
+        if (now >= start && now <= end) {
+          return Math.max(0, end - now);
+        }
+      }
+      return Math.max(0, video.buffered.end(video.buffered.length - 1) - now);
+    }
+
+    function updateBufferBar() {
+      if (!Number.isFinite(video.duration) || video.duration <= 0 || !video.buffered.length) {
+        bufferFill.style.width = "0%";
+        bufferBadge.textContent = "Buffer 0%";
+        return;
+      }
+      const end = video.buffered.end(video.buffered.length - 1);
+      const pct = Math.min(100, Math.round((end / video.duration) * 100));
+      bufferFill.style.width = `${pct}%`;
+      const ahead = Math.round(getBufferedAhead());
+      bufferBadge.textContent = `Buffer ${pct}% (+${ahead}s)`;
+
+      if (state.lowNetMode && state.pausedForBuffer && ahead >= 12) {
+        state.pausedForBuffer = false;
+        video.play().catch(() => {});
+        setStatus("Buffered 12s ahead — resuming.");
+      }
+    }
+
+    function updatePlayedBar(pct) {
+      const clamped = Math.max(0, Math.min(100, Number(pct) || 0));
+      playedFill.style.width = `${clamped}%`;
+      seekBar.value = String(clamped);
+    }
+
+    function toggleLowNet() {
+      state.lowNetMode = !state.lowNetMode;
+      lowNetBtn.classList.toggle("active", state.lowNetMode);
+      if (state.lowNetMode) {
+        video.playbackRate = 1;
+        speedSelect.value = "1";
+        setStatus("Low Net ON: pre-buffers & resumes smoothly.");
+      } else {
+        setStatus("Low Net OFF: standard playback.");
+      }
+    }
+
+    function syncPlayUI() {
+      const playing = !video.paused && !video.ended;
+      playPauseBtn.textContent = playing ? "Pause" : "Play";
+      centerPlayBtn.classList.toggle("hidden", playing);
+      if (playing) {
+        wakeControls();
+      } else {
+        clearTimeout(state.hideTimer);
+        nfStage.classList.remove("controls-hidden");
+      }
+    }
+
+    function togglePlay() {
+      if (!video.src) return;
+      state.pausedForBuffer = false;
+      if (video.paused) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+    }
+
+    function skipBy(delta) {
+      if (!video.src) return;
+      state.pausedForBuffer = false;
+      video.currentTime = Math.max(0, Math.min(video.duration || Infinity, video.currentTime + delta));
+      wakeControls();
+    }
+
+    function onSeek(val) {
+      if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+      state.pausedForBuffer = false;
+      updatePlayedBar(val);
+      video.currentTime = (Number(val) / 100) * video.duration;
+      wakeControls();
+    }
+
+    function onVolume(val) {
+      video.volume = Number(val);
+      video.muted = video.volume === 0;
+      muteBtn.textContent = video.muted ? "Unmute" : "Mute";
+    }
+
+    function toggleMute() {
+      video.muted = !video.muted;
+      muteBtn.textContent = video.muted ? "Unmute" : "Mute";
+    }
+
+    function onSpeed(val) {
+      video.playbackRate = Number(val);
+    }
+
+    function renderQualityOptions(qualities, selectedUrl) {
+      qualitySelect.innerHTML = "";
+      const list = Array.isArray(qualities) && qualities.length
+        ? qualities
+        : [{ quality: "Default", label: "Current", url: selectedUrl }];
+
+      const presetOrder = ["360p", "480p", "720p", "1080p", "4K"];
+      const seenQual = new Set();
+
+      list.forEach((q) => {
+        if (!q.url) return;
+        const opt = document.createElement("option");
+        opt.value = q.url;
+        opt.textContent = q.quality && q.quality !== "Standard" ? q.quality : cleanDisplayLabel(q.label);
+        if (q.url === selectedUrl) opt.selected = true;
+        qualitySelect.appendChild(opt);
+        seenQual.add((q.quality || "").toLowerCase());
+      });
+
+      presetOrder.forEach((p) => {
+        if (!seenQual.has(p.toLowerCase()) && list.length === 1 && list[0].url) {
+          const opt = document.createElement("option");
+          opt.value = list[0].url;
+          opt.textContent = p;
+          qualitySelect.appendChild(opt);
+        }
+      });
+    }
+
+    async function onQualityChange(targetUrl) {
+      if (!targetUrl) return;
+      const reqId = ++state.resolveReqId;
+      const wasPlaying = !video.paused && !video.ended;
+      const resumeSec = video.currentTime || 0;
+      state.pendingSeekTime = resumeSec > 1 ? resumeSec : null;
+      state.pausedForBuffer = false;
+      setStatus(`Switching quality at ${formatTime(resumeSec)}...`);
+
+      try {
+        const qs = new URLSearchParams({
+          url: targetUrl,
+          title: state.activeMovieTitle || "",
+        });
+        if (state.activeReferer) qs.set("referer", state.activeReferer);
+        const res = await fetch("/api/resolve-quality?" + qs.toString());
+        const data = await res.json();
+        if (reqId !== state.resolveReqId) return;
+        if (!data.ok || !data.stream_url) {
+          state.pendingSeekTime = null;
+          setStatus(data.error || "Quality switch failed", true);
+          return;
+        }
+
+        video.src = data.stream_url;
+        video.load();
+        if (wasPlaying) {
+          video.play().catch(() => {});
+        }
+        updateDownloadButton(data.download_url);
+        setStatus("Quality switched.");
+      } catch (err) {
+        if (reqId !== state.resolveReqId) return;
+        state.pendingSeekTime = null;
+        setStatus(err.message, true);
+      }
+    }
+
+    function updateDownloadButton(downloadUrl) {
+      const links = document.getElementById("actionLinks");
+      links.innerHTML = "";
+      if (downloadUrl) {
+        const dlA = document.createElement("a");
+        dlA.className = "btn btn-dark";
+        dlA.href = downloadUrl;
+        dlA.download = "";
+        dlA.textContent = "Download";
+        links.appendChild(dlA);
+      }
+    }
+
+    async function togglePiP() {
+      try {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else if (video.requestPictureInPicture) {
+          await video.requestPictureInPicture();
+        }
+      } catch (_) {}
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        (nfStage.requestFullscreen || video.requestFullscreen || (() => {})).call(nfStage).catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    video.addEventListener("play", syncPlayUI);
+    video.addEventListener("pause", syncPlayUI);
+    video.addEventListener("ended", syncPlayUI);
+    video.addEventListener("progress", updateBufferBar);
+    video.addEventListener("waiting", () => {
+      updateBufferBar();
+      if (state.lowNetMode && !video.paused) {
+        state.pausedForBuffer = true;
+        video.pause();
+        setStatus("Slow connection — buffering ahead...");
+      }
+    });
+    video.addEventListener("timeupdate", () => {
+      if (Number.isFinite(video.duration) && video.duration > 0) {
+        updatePlayedBar((video.currentTime / video.duration) * 100);
+      }
+      timeReadout.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      updateBufferBar();
+    });
+    video.addEventListener("loadedmetadata", () => {
+      if (state.pendingSeekTime !== null && Number.isFinite(video.duration)) {
+        video.currentTime = Math.min(state.pendingSeekTime, Math.max(0, video.duration - 1));
+        state.pendingSeekTime = null;
+      }
+      timeReadout.textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+      updateBufferBar();
+    });
+
+    function setStatus(msg, isError = false) {
+      const el = document.getElementById("resolveStatus");
+      el.textContent = msg;
+      el.className = isError ? "nf-sub-status error" : "nf-sub-status";
+    }
+
+    function fallbackSvgDataUrl(title) {
+      const safe = (cleanDisplayLabel(title) || "HILAX").toUpperCase().slice(0, 18);
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="450" viewBox="0 0 300 450"><rect width="300" height="450" fill="#14171f"/><rect x="14" y="14" width="272" height="422" rx="10" fill="none" stroke="#e50914" stroke-width="2" opacity="0.65"/><text x="150" y="225" fill="#ffffff" font-family="system-ui,sans-serif" font-size="20" font-weight="700" text-anchor="middle">${safe}</text></svg>`;
+      return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    }
+
+    function posterSrc(title, pageUrl = "", referer = "") {
+      const qs = new URLSearchParams();
+      qs.set("title", cleanDisplayLabel(title || "Movie"));
+      if (pageUrl) qs.set("url", pageUrl);
+      if (referer) qs.set("referer", referer);
+      return `/api/poster-proxy?${qs.toString()}`;
+    }
+
+    function createPosterCard(item, onClick) {
+      const cleanTitle = cleanDisplayLabel(item.title || "Untitled");
+      const targetUrl = item.url || "";
+      const refUrl = item.page_url || state.currentUrl || "";
+
+      const card = document.createElement("div");
+      card.className = "poster-card";
+      card.onclick = onClick;
+
+      const wrap = document.createElement("div");
+      wrap.className = "poster-img-wrap";
+
+      const img = document.createElement("img");
+      img.className = "poster-img";
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.alt = cleanTitle;
+      img.src = fallbackSvgDataUrl(cleanTitle);
+      setTimeout(() => {
+        if (img.isConnected) img.src = posterSrc(cleanTitle, targetUrl, refUrl);
+      }, 60);
+      img.onerror = () => {
+        img.onerror = null;
+        img.src = fallbackSvgDataUrl(cleanTitle);
+      };
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "poster-title";
+      titleEl.textContent = cleanTitle;
+
+      wrap.appendChild(img);
+      card.appendChild(wrap);
+      card.appendChild(titleEl);
+      return card;
+    }
+
+    function highlightActiveCategory() {
+      document.querySelectorAll("#categories .cat-btn").forEach((btn) => {
+        btn.classList.toggle("active", btn.dataset.url === state.activeCatUrl);
+      });
+    }
+
+    async function returnToMainLibrary() {
+      state.canGoBack = false;
+      state.activeCatUrl = null;
+      state.history = [];
+      state.currentUrl = null;
+      state.currentReferer = null;
+      state.currentTitle = "";
+      syncBackButtons();
+      document.getElementById("breadcrumb").innerHTML = "";
+      document.getElementById("entries").innerHTML = "";
+      document.getElementById("pager").innerHTML = "";
+      await fetch("/api/switch-mode?mode=primary");
+      await loadCategories(null, null, "primary");
+    }
+
+    function renderBreadcrumb() {
+      const box = document.getElementById("breadcrumb");
+      box.innerHTML = "";
+      if (state.canGoBack) {
+        const backBtn = document.createElement("button");
+        backBtn.className = "crumb crumb-back";
+        backBtn.textContent = "← Back to Main";
+        backBtn.onclick = () => returnToMainLibrary();
+        box.appendChild(backBtn);
+      }
+      state.history.forEach((entry, idx) => {
+        const b = document.createElement("button");
+        b.className = "crumb";
+        b.textContent = cleanDisplayLabel(entry.title);
+        b.onclick = () => {
+          state.history = state.history.slice(0, idx + 1);
+          loadBrowse(entry.url, entry.referer || null, false, entry.title);
+        };
+        box.appendChild(b);
+      });
+    }
+
+    async function applyCustomSites() {
+      const pRaw = document.getElementById("primarySiteInput").value.trim();
+      const dRaw = document.getElementById("dubbedSiteInput").value.trim();
+      if (!pRaw && !dRaw) return;
+      if (!state.adminKey) {
+        window.alert("Admin access required.");
+        return;
+      }
+      if (pRaw) state.seedUrl = pRaw;
+      if (dRaw) state.dubbedUrl = dRaw;
+      state.canGoBack = false;
+      state.activeCatUrl = null;
+      state.history = [];
+      state.currentUrl = null;
+      state.currentReferer = null;
+      syncBackButtons();
+      document.getElementById("breadcrumb").innerHTML = "";
+      document.getElementById("entries").innerHTML = "";
+      document.getElementById("pager").innerHTML = "";
+      document.getElementById("searchResults").innerHTML = "";
+      document.getElementById("searchMeta").textContent = "";
+      await loadCategories(pRaw || null, dRaw || null, "primary");
+    }
+
+    async function loadCategories(seedOverride = null, dubbedOverride = null, mode = null) {
+      const catBox = document.getElementById("categories");
+      catBox.innerHTML = `<div class="status">Loading categories...</div>`;
+      try {
+        const qs = new URLSearchParams();
+        if (state.adminKey && seedOverride) qs.set("seed_url", seedOverride);
+        if (state.adminKey && dubbedOverride) qs.set("dubbed_url", dubbedOverride);
+        if (mode) qs.set("mode", mode);
+        const res = await fetch("/api/categories?" + qs.toString(), {
+          headers: adminHeaders(),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Failed to load categories");
+        state.canGoBack = Boolean(data.can_go_back);
+        syncBackButtons();
+        renderBreadcrumb();
+
+        catBox.innerHTML = "";
+        data.items.forEach((item) => {
+          const cleanCat = cleanDisplayLabel(item.title);
+          const btn = document.createElement("button");
+          btn.className = "cat-btn";
+          btn.dataset.url = item.url;
+          btn.innerHTML = `<span>${cleanCat}</span><span class="meta cat-arrow">&rarr;</span>`;
+          btn.onclick = async () => {
+            state.activeCatUrl = item.url;
+            highlightActiveCategory();
+            if (item.url === "__tamil_dubbed_movies__") {
+              state.canGoBack = true;
+              syncBackButtons();
+              state.history = [{ title: cleanCat, url: item.url, referer: null }];
+              await loadCategories(null, null, "dubbed");
+              await loadBrowse(item.url, null, false, cleanCat);
+            } else {
+              state.history = [{ title: cleanCat, url: item.url, referer: null }];
+              loadBrowse(item.url, null, false, cleanCat);
+            }
+          };
+          catBox.appendChild(btn);
+        });
+        highlightActiveCategory();
+      } catch (err) {
+        catBox.innerHTML = `<div class="status error">${err.message}</div>`;
+      }
+    }
+
+    async function loadBrowse(url, referer = null, pushHistory = true, title = null) {
+      const reqId = ++state.browseReqId;
+      const entBox = document.getElementById("entries");
+      const pgBox = document.getElementById("pager");
+      entBox.innerHTML = `<div class="status">Loading...</div>`;
+      pgBox.innerHTML = "";
+
+      try {
+        const qs = new URLSearchParams({ url });
+        if (referer) qs.set("referer", referer);
+        const res = await fetch("/api/browse?" + qs.toString());
+        const data = await res.json();
+        if (reqId !== state.browseReqId) return;
+        if (!data.ok) throw new Error(data.error || "Browse failed");
+
+        if (typeof data.can_go_back === "boolean") {
+          state.canGoBack = data.can_go_back;
+          syncBackButtons();
+        }
+        state.currentUrl = url;
+        state.currentReferer = referer;
+        const cleanTitle = title ? cleanDisplayLabel(title) : state.currentTitle;
+        if (cleanTitle) state.currentTitle = cleanTitle;
+        if (pushHistory && cleanTitle) {
+          state.history.push({ title: cleanTitle, url, referer });
+        }
+        renderBreadcrumb();
+
+        if (data.downloads && data.downloads.length) {
+          const preferred =
+            data.downloads.find((d) => /720p/i.test(`${d.quality || ""} ${d.title || ""}`)) ||
+            data.downloads[0];
+          resolveMedia(preferred.url, url, state.currentTitle || preferred.title, data.downloads);
+        }
+
+        entBox.innerHTML = "";
+        (data.entries || []).forEach((ent) => {
+          entBox.appendChild(
+            createPosterCard({ ...ent, page_url: url }, () =>
+              loadBrowse(ent.url, url, true, ent.title)
+            )
+          );
+        });
+
+        pgBox.innerHTML = "";
+        if (data.pages && data.pages.length) {
+          data.pages.forEach((pg) => {
+            const btn = document.createElement("button");
+            btn.className = "crumb";
+            btn.textContent = cleanDisplayLabel(pg.title);
+            btn.onclick = () => loadBrowse(pg.url, url, false, pg.title);
+            pgBox.appendChild(btn);
+          });
+        }
+      } catch (err) {
+        if (reqId !== state.browseReqId) return;
+        entBox.innerHTML = `<div class="status error">${err.message}</div>`;
+      }
+    }
+
+    async function runSearch() {
+      const q = document.getElementById("searchInput").value.trim();
+      const scope = document.getElementById("searchScope").value || "all";
+      const metaEl = document.getElementById("searchMeta");
+      const resBox = document.getElementById("searchResults");
+      if (!q) {
+        metaEl.textContent = "";
+        resBox.innerHTML = "";
+        return;
+      }
+
+      const targetUrl = state.currentUrl || "";
+      const targetRef = state.currentReferer || "";
+      metaEl.textContent =
+        scope === "all"
+          ? `Searching movies for "${q}"...`
+          : `Searching current category for "${q}"...`;
+      resBox.innerHTML = "";
+
+      try {
+        const qs = new URLSearchParams({ q, scope });
+        if (state.adminKey && state.seedUrl) qs.set("seed_url", state.seedUrl);
+        if (state.adminKey && state.dubbedUrl) qs.set("dubbed_url", state.dubbedUrl);
+        if (targetUrl) qs.set("url", targetUrl);
+        if (targetRef) qs.set("referer", targetRef);
+
+        const res = await fetch("/api/search?" + qs.toString(), {
+          headers: adminHeaders(),
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || "Search failed");
+
+        if (!data.results.length) {
+          metaEl.textContent = `No matches found in ${data.total_scanned_entries} scanned items.`;
+          return;
+        }
+
+        metaEl.textContent = `Found ${data.count} match(es) across ${data.total_scanned_entries} items:`;
+        data.results.forEach((item) => {
+          resBox.appendChild(
+            createPosterCard(item, () =>
+              loadBrowse(item.url, item.page_url || targetUrl, true, item.title)
+            )
+          );
+        });
+      } catch (err) {
+        metaEl.innerHTML = `<span class="error">${err.message}</span>`;
+      }
+    }
+
+    async function resolveMedia(dlUrl, referer, movieTitle, knownDownloads = null) {
+      const reqId = ++state.resolveReqId;
+      const shotImg = document.getElementById("shotImg");
+      const nowPlaying = document.getElementById("nowPlayingTitle");
+      const cleanMovie = cleanDisplayLabel(movieTitle || "Movie Stream");
+
+      state.activeMovieTitle = cleanMovie;
+      state.activeReferer = referer || null;
+      state.pendingSeekTime = null;
+      state.pausedForBuffer = false;
+
+      nowPlaying.textContent = cleanMovie;
+      video.pause();
+      video.removeAttribute("src");
+      updatePlayedBar(0);
+      bufferFill.style.width = "0%";
+      bufferBadge.textContent = "Buffer 0%";
+      timeReadout.textContent = "00:00 / 00:00";
+      syncPlayUI();
+      updateDownloadButton(null);
+      shotImg.src = fallbackSvgDataUrl(cleanMovie);
+      shotImg.style.display = "block";
+      setTimeout(() => {
+        if (shotImg.isConnected && reqId === state.resolveReqId) {
+          shotImg.src = posterSrc(cleanMovie, referer || dlUrl, dlUrl);
+        }
+      }, 80);
+      setStatus("Preparing stream...");
+
+      if (Array.isArray(knownDownloads) && knownDownloads.length) {
+        renderQualityOptions(
+          knownDownloads.map((d) => ({
+            quality: d.quality || "Standard",
+            label: cleanDisplayLabel(d.title),
+            url: d.url,
+          })),
+          dlUrl
+        );
+      }
+
+      try {
+        const qs = new URLSearchParams({ url: dlUrl, title: cleanMovie });
+        if (referer) qs.set("referer", referer);
+        const res = await fetch("/api/resolve?" + qs.toString());
+        const data = await res.json();
+        if (reqId !== state.resolveReqId) return;
+
+        if (!data.ok) {
+          if (data.shot_url && shotImg.isConnected) {
+            shotImg.src = data.shot_url;
+          }
+          setStatus(data.error || "Could not prepare stream", true);
+          return;
+        }
+
+        if (data.shot_url && shotImg.isConnected) {
+          shotImg.src = data.shot_url;
+        }
+
+        if (!Array.isArray(knownDownloads) || !knownDownloads.length) {
+          renderQualityOptions(data.qualities, dlUrl);
+        }
+
+        if (data.stream_url) {
+          setStatus("Buffering stream...");
+          video.src = data.stream_url;
+          video.load();
+          video.play().catch(() => {});
+          nfStage.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        } else {
+          setStatus("Stream session ready.");
+        }
+
+        updateDownloadButton(data.download_url);
+      } catch (err) {
+        if (reqId !== state.resolveReqId) return;
+        setStatus(err.message, true);
+      }
+    }
+
+    loadCategories();
+  </script>
+</body>
+</html>
